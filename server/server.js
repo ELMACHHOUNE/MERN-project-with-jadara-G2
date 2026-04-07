@@ -1,8 +1,10 @@
 require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 const port = process.env.PORT || 5000;
 const clientUrl = process.env.CLIENT_URL;
+const mongoUri = process.env.MONGODB_URI;
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -35,6 +37,18 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+const startServer = async () => {
+  try {
+    await mongoose.connect(mongoUri);
+    console.log("MongoDB connected");
+
+    app.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
