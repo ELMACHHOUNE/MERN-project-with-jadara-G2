@@ -1,10 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const authRoutes = require("./routes/authRoutes");
 const app = express();
 const port = process.env.PORT || 5000;
 const clientUrl = process.env.CLIENT_URL;
 const mongoUri = process.env.MONGODB_URI;
+const jwtSecret = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -37,8 +39,14 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.use("/api/auth", authRoutes);
+
 const startServer = async () => {
   try {
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is missing in .env");
+    }
+
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected");
 
